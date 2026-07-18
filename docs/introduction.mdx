@@ -1,0 +1,28 @@
+---
+title: Ducktivity
+description: 'A suite of productivity apps unlocked with one payment.'
+slug: /
+sidebar_position: 1
+sidebar_label: Introduction
+---
+
+# Ducktivity
+
+Ducktivity is a growing family of productivity apps that make everyday life easier. Every app reads and writes a local storage first and syncs to the cloud in the background, so the UI is instant.
+
+These docs describe how the suite is built and how to run it — the architecture every app shares, the local dev setup, and the deployment handbook.
+
+## The apps
+
+What we've shipped in the Ducktivity suite so far, with more on the way.
+
+| App            | What it does                                       | Frontend       | Backend | Local store |
+| -------------- | -------------------------------------------------- | -------------- | ------- | ----------- |
+| **Drinkwater** | Track daily water intake and get nudged to keep up | SolidJS, Tauri | Go      | IndexedDB   |
+| **Wallet**     | Log spending and cash flow                         | Flutter        | Go      | SQLite      |
+
+## Where to go next
+
+- **[Architecture](/architecture/overview)** — how it all fits together.
+- **[Development](/development/local-setup)** — build and run it locally.
+- **[Deployment](/deployment/overview)** — ship it to production.

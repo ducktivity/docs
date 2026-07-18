@@ -1,0 +1,30 @@
+/**
+ * Any CSS included here will be global. The classic template
+ * bundles Infima by default. Infima is a CSS framework designed to
+ * work well for content-centric websites.
+ */
+
+/* Ducktivity green (matches the old docs.json primary #16A34A). */
+:root {
+  --ifm-color-primary: #16a34a;
+  --ifm-color-primary-dark: #14913f;
+  --ifm-color-primary-darker: #13893c;
+  --ifm-color-primary-darkest: #0f7131;
+  --ifm-color-primary-light: #18b555;
+  --ifm-color-primary-lighter: #1abd58;
+  --ifm-color-primary-lightest: #22d066;
+  --ifm-code-font-size: 95%;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+}
+
+/* A lighter green reads better on the dark background. */
+[data-theme='dark'] {
+  --ifm-color-primary: #34d072;
+  --ifm-color-primary-dark: #23c463;
+  --ifm-color-primary-darker: #21b95d;
+  --ifm-color-primary-darkest: #1b994d;
+  --ifm-color-primary-light: #4bd984;
+  --ifm-color-primary-lighter: #57dc8c;
+  --ifm-color-primary-lightest: #7be5a6;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+}

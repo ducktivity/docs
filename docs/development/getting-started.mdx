@@ -1,0 +1,106 @@
+---
+title: Getting started
+description: 'Clone the repos into one workspace, then run identity, an app backend, and its client — all against localhost.'
+---
+
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
+
+# Getting started
+
+For local development you run the backends **directly** (no tunnel, no box) and point each client at `localhost`. The edge layer is a production concern; you don't need it for dev.
+
+## Prerequisites
+
+Install these before you clone anything — they're the bare minimum to get a backend and a full stack running:
+
+| Tool               | Why                                                     | Install                                                                                                   |
+| ------------------ | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| **Git**            | Clone the repos and work on `staging`.                  | [git-scm.com](https://git-scm.com/downloads)                                                              |
+| **Go**             | Every backend is Go; each pins its version in `go.mod`. | [go.dev/dl](https://go.dev/dl/)                                                                           |
+| **Node.js + pnpm** | Build and run the web/desktop client.                   | [nodejs.org](https://nodejs.org/) (LTS), then `npm i -g pnpm`                                             |
+| **VS Code**        | Recommended editor;                                     | [code.visualstudio.com](https://code.visualstudio.com/)                                                   |
+| **Postgres**       | A local database each backend can reach.                | [postgresql.org](https://www.postgresql.org/download/)                                                    |
+| **DB editor**      | Browse and edit tables while developing.                | [pgAdmin](https://www.pgadmin.org/download/) (Windows) or [Postico](https://eggerapps.at/postico2/) (Mac) |
+
+## 1. Set up the workspace
+
+Every repo lives under one parent folder. Create it:
+
+```bash
+mkdir -p ~/dev/ducktivity && cd ~/dev/ducktivity
+```
+
+You'll clone apps into it next.
+
+## 2. Set up identity service locally
+
+Every app verifies tokens against identity, so get it running first.
+
+1. **Clone it and pull dependencies:**
+
+   ```bash
+   git clone git@github.com:ducktivity/identity.git
+   cd identity/backend
+   go install
+   ```
+
+2. **Create the database.** In your DB editor (pgAdmin / Postico), create an empty
+   `ducktivity` database.
+
+3. **Run the migrations and verify they applied:**
+
+   ```bash
+   ./scripts/db-migrate.sh up      # apply goose migrations
+   ./scripts/db-migrate.sh status  # confirm every migration shows as applied
+   ```
+
+   Refresh the database in your DB editor — you should now see identity's tables under the
+   `identity` schema.
+
+4. **Start it with live reload** via [air](https://github.com/air-verse/air), pinned as a Go tool:
+
+   ```bash
+   go tool air        # rebuilds on save, serves http://localhost:8000
+   ```
+
+   Trigger a login and read the 6-digit code straight from the identity logs in your terminal.
+
+## 3. Clone and run an app backend
+
+Clone an app into the same workspace folder:
+
+```bash
+cd ~/dev/ducktivity
+git clone git@github.com:ducktivity/drinkwater.git
+```
+
+Then repeat the steps in [section 2](#2-set-up-identity-service-locally) for its
+`backend/` — install dependencies, create its database, run migrations, and start it with `go tool air`.
+
+## 4. Run the client
+
+<Tabs>
+  <TabItem value="drinkwater" label="Drinkwater (web / desktop)">
+
+```bash
+cd drinkwater/web-desktop
+pnpm install
+pnpm run dev        # Vite dev server; point it at the local backend
+```
+
+The desktop build is the same SolidJS bundle inside a Tauri shell — run it with the
+Tauri dev command when you need to exercise the native shell.
+
+  </TabItem>
+  <TabItem value="wallet" label="Wallet (mobile)">
+
+```bash
+cd wallet/mobile
+flutter pub get
+dart run build_runner build   # generate Drift + API model code
+flutter run                   # on an emulator or device
+```
+
+  </TabItem>
+</Tabs>

@@ -1,0 +1,63 @@
+---
+title: Overview
+description: 'How the Ducktivity suite architecture works.'
+---
+
+# Overview
+
+The Ducktivity suite has three layers:
+
+- **Clients** — frontend apps that read and write locally, then sync in the
+  background.
+- **Cloudflare edge** — acts as a secure bridge to expose internal services without opening the box's inbound ports.
+- **Servers** — backend servers hosted on the same box (VPS) with a shared Postgres database.
+
+```mermaid
+graph TD
+    subgraph Clients["Clients"]
+        App[Frontend App<br/>web · desktop · mobile]
+    end
+
+    subgraph Edge["Cloudflare edge"]
+        WAF[WAF]
+        Access[Access]
+        Tunnel[Cloudflare Tunnel]
+    end
+
+    subgraph Box["One box (VPS)"]
+        subgraph Net["private Docker network"]
+            CFd[cloudflared<br/>routes by hostname]
+            Plat[identity service<br/>:8000]
+            AppB[app backend<br/>:800x]
+        end
+        Logs[Docker daemon<br/>collect_logs label]
+        Vec[vector]
+        SSHd[host sshd<br/>host.docker.internal:22]
+    end
+
+    Neon[(Neon Postgres)]
+    BetterStack[(BetterStack)]
+
+    App -->|"POST /sync, /auth"| WAF
+    Ops[Deploy CI / maintainer] -->|SSH| Access
+    WAF & Access --> Tunnel
+    Tunnel <-.one outbound tunnel.-> CFd
+    CFd -->|id.ducktvt.com| Plat
+    CFd -->|"&lt;app&gt;.ducktvt.com"| AppB
+    CFd -.->|SSH to :22| SSHd
+    Plat & AppB -->|pooled, per-app role| Neon
+    CFd & Plat & AppB -.stdout.-> Logs
+    Logs -.->|docker.sock| Vec
+    Vec -->|ship| BetterStack
+    AppB -.verify token via JWKS.-> Plat
+```
+
+## How it works
+
+1. A frontend app sends `POST /sync` to Cloudflare's WAF.
+2. The request travels through the outbound tunnel to `cloudflared` on the box, which routes by hostname (e.g., `id.ducktvt.com` → `http://identity-backend:8000`).
+3. App backends verify user tokens with identity service's JWKS public key.
+4. App backends query the shared Postgres database, each using its own role and schema.
+5. Logs from every container flow to `vector`, which ships them to BetterStack.
+
+The box opens no inbound ports, you can't reach the origin IP directly. Every request must pass through Cloudflare's firewall first. Even SSH goes through Cloudflare Access over the same tunnel, so port 22 stays closed.
